@@ -50,7 +50,7 @@ making it a good foundation for future enhancements.
    git clone git@github.com:beemaneni-sandya/mood-recommender.git
 2. Navigate to the project directory:
    ```bash
-   cd mood-recommender
+   cd Mood-Recommender
 3. Run the application:
    ```bash
    ./mvnw spring-boot:run
