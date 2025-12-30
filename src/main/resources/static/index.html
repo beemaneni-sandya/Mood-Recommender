@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Recommender</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s ease;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .input-group {
+            margin-bottom: 30px;
+        }
+
+        input {
+            width: 70%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .result {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .mood-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .mood-emoji {
+            width: 80px;
+            height: 80px;
+            margin: 10px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .quote {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #667eea;
+            font-style: italic;
+        }
+
+        .songs ul {
+            list-style: none;
+        }
+
+        .songs li {
+            background: white;
+            padding: 12px 15px;
+            margin: 8px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .songs li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .songs a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .loading {
+            display: none;
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .mood-suggestions {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .mood-tag {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mood-tag:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 Mood Recommender</h1>
+        
+        <div class="input-group">
+            <input type="text" id="moodInput" placeholder="How are you feeling today?">
+            <button onclick="getRecommendation()">Discover</button>
+        </div>
+
+        <div class="mood-suggestions">
+            <p>Try: </p>
+            <span class="mood-tag" onclick="setMood('happy')">Happy</span>
+            <span class="mood-tag" onclick="setMood('sad')">Sad</span>
+            <span class="mood-tag" onclick="setMood('excited')">Excited</span>
+            <span class="mood-tag" onclick="setMood('calm')">Calm</span>
+            <span class="mood-tag" onclick="setMood('stressed')">Stressed</span>
+            <span class="mood-tag" onclick="setMood('bored')">Bored</span>
+        </div>
+
+        <div class="loading" id="loading">✨ Finding perfect recommendations...</div>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        function setMood(mood) {
+            document.getElementById('moodInput').value = mood;
+            getRecommendation();
+        }
+
+        async function getRecommendation() {
+            const mood = document.getElementById('moodInput').value.trim();
+            if(!mood){ 
+                alert("Please enter your mood!"); 
+                return; 
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').innerHTML = '';
+
+            try {
+                const response = await fetch(`/api/mood?mood=${mood}`);
+                const data = await response.json();
+
+                // Change background based on mood
+                const moodColors = {
+                    'happy': 'linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%)',
+                    'sad': 'linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)',
+                    'excited': 'linear-gradient(135deg, #fd79a8 0%, #e84393 100%)',
+                    'calm': 'linear-gradient(135deg, #00b894 0%, #00cec9 100%)',
+                    'stressed': 'linear-gradient(135deg, #e17055 0%, #d63031 100%)',
+                    'bored': 'linear-gradient(135deg, #636e72 0%, #2d3436 100%)',
+                    'angry': 'linear-gradient(135deg, #e17055 0%, #d63031 100%)'
+                };
+                
+                document.body.style.background = moodColors[mood.toLowerCase()] || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+
+                let quotesHTML = "";
+                if(data.quotes && data.quotes.length > 0) {
+                    for(let quote of data.quotes) {
+                        quotesHTML += `<div class="quote">"${quote.title}"</div>`;
+                    }
+                } else {
+                    quotesHTML = `<div class="quote">"Every moment is a fresh beginning." - T.S. Eliot</div>`;
+                }
+
+                let songsHTML = "";
+                if(data.songs && data.songs.length > 0) {
+                    songsHTML = "<ul>";
+                    for(let song of data.songs) {
+                        songsHTML += `<li><a href="${song.url}" target="_blank">🎵 ${song.title}</a></li>`;
+                    }
+                    songsHTML += "</ul>";
+                } else {
+                    songsHTML = `<ul><li><a href="https://music.apple.com/" target="_blank">🎵 Explore music for your mood</a></li></ul>`;
+                }
+
+                document.getElementById('result').innerHTML = `
+                    <div class="mood-header">
+                        <h2>You're feeling ${data.mood}</h2>
+                        <img src="${data.emojiUrl}" alt="Emoji" class="mood-emoji">
+                    </div>
+                    
+                    <div class="section quotes">
+                        <h3>💭 Inspiring Quotes</h3>
+                        ${quotesHTML}
+                    </div>
+                    
+                    <div class="section songs">
+                        <h3>🎶 Music Recommendations</h3>
+                        ${songsHTML}
+                    </div>
+                `;
+
+            } catch(error) {
+                document.getElementById('result').innerHTML = `
+                    <div class="section">
+                        <p style="color: #d63031;">Oops! Something went wrong. Please try again.</p>
+                    </div>
+                `;
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // Allow Enter key to trigger search
+        document.getElementById('moodInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                getRecommendation();
+            }
+        });
+    </script>
+</body>
+</html>
