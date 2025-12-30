@@ -58,7 +58,7 @@ making it a good foundation for future enhancements.
    ```bash
    http://localhost:8080
 
-**Future Enhancements**
+## Future Enhancements
 - Database-backed recommendation storage
 - Integration with external music or quote APIs
 - User personalization
